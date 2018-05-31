@@ -175,12 +175,12 @@ class ImageDataPair:
 
 
             for i in range(len(image_b_paths)):
-                image_b_paths[i] = image_b_paths[i].replace('trainA', 'trainB')
+                image_b_paths[i] = image_b_paths[i].replace('A', 'B')
                 image_b_paths[i] = image_b_paths[i].replace('_0', '_road_0')
         else:
 
             for i in range(len(image_b_paths)):
-                image_b_paths[i] = image_b_paths[i].replace('trainA', 'trainB')
+                image_b_paths[i] = image_b_paths[i].replace('A', 'B')
                 image_b_paths[i] = image_b_paths[i].replace('_0', '_road_0')
 
             image_unpair_apaths = []

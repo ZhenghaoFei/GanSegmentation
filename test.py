@@ -71,53 +71,6 @@ sess = tf.Session(config=config)
 it_cnt, update_cnt = utils.counter()
 
 
-
-
-# # #########################
-# # PLOT
-# a_real_ipt = a_data_pool.batch()
-# b_real_ipt = b_data_pool.batch()
-
-# ab_match_pair_ipt = ab_pair_data_pool.batch_match()
-
-# img = ab_match_pair_ipt[0]
-# print('img', img.shape)
-
-# label = np.zeros_like(img[:, :, :3])
-# label[:,:,0] = img[:, :, 3]
-
-# print('label', label.shape)
-# img = np.concatenate((img[:, :, :3], label), axis=1)
-# print('img', img.shape)
-# img = im._im2uint(img)
-
-# plt.imshow(img)
-# plt.show()
-
-
-# img = a_real_ipt[0]
-# img = im._im2uint(img)
-# plt.imshow(img)
-# plt.show()
-
-
-
-# img = np.zeros_like(a_real_ipt)
-# print('img', img.shape)
-# print('a_real_ipt', a_real_ipt.shape)
-# print('b_real_ipt', b_real_ipt.shape)
-
-# img[:,:,:,0] = b_real_ipt[:,:,:,0]
-
-# img = img[0,:,:,:]
-
-# img = im._im2uint(img)
-# plt.imshow(img)
-# plt.show()
-
-# # #########################
-
-
 ''' saver '''
 saver = tf.train.Saver(max_to_keep=5)
 
@@ -126,25 +79,47 @@ ckpt_dir = model
 utils.load_checkpoint(ckpt_dir, sess)
 
 ''' data '''
-test_img_paths = glob(input_path + '*')
+a_test_img_paths = glob(input_path + '*')
 
-for path in test_img_paths:
-    img = tf.read_file(path)
-    img = tf.image.decode_jpeg(img, channels=3)
-    img = tf.image.resize_images(img, load_size)
-    img = (img - tf.reduce_min(img)) / (tf.reduce_max(img) - tf.reduce_min(img))
-    img = tf.expand_dims(img, axis=0)
-    img = sess.run(img)
+# a_test_pool = data.ImageData(sess, a_test_img_paths, batch_size=3, load_size=load_size, shuffle=False, crop_size=crop_size)
 
-    predict_op = tf.image.resize_images(predict_op, [376, 1242])
-    predict = sess.run(predict_op, feed_dict={a_real: img})
-    predict = predict[0, :, :,0]
-    predict_uinit8 = (predict*255).astype('u1')
+ab_pair_test_pool = data.ImageDataPair(sess, a_test_img_paths, batch_size=3, load_size=load_size, shuffle=False, crop_size=crop_size)
 
-    # save results
-    save_path = path.replace(input_path, output_path)
-    save_path = save_path.replace('_0', '_road_0')
+ab_pair_ipt = ab_pair_test_pool.batch_match()
 
-    cv2.imwrite(save_path, predict_uinit8)
-    print('saved ', save_path)
+a_ipt = ab_pair_ipt[:,:,:,:3]
+b_ipt = ab_pair_ipt[:,:,:,3:]
+
+predict = sess.run(predict_op, feed_dict={a_real: a_ipt})
+print('predict: ', predict.shape)
+
+sample_opt = a_ipt
+sample_opt[:,:,:,0] = 0.7*sample_opt[:,:,:,0] + 0.3* predict[:,:,:,0]
+
+
+im.imwrite(im.immerge(sample_opt, len(sample_opt), 1), './result.jpg')
+
+# test_img_paths = glob(input_path + '*')
+
+
+
+# for path in test_img_paths:
+#     img = tf.read_file(path)
+#     img = tf.image.decode_jpeg(img, channels=3)
+#     img = tf.image.resize_images(img, load_size)
+#     img = (img - tf.reduce_min(img)) / (tf.reduce_max(img) - tf.reduce_min(img))
+#     img = tf.expand_dims(img, axis=0)
+#     img = sess.run(img)
+
+#     predict_op = tf.image.resize_images(predict_op, [376, 1242])
+#     predict = sess.run(predict_op, feed_dict={a_real: img})
+#     predict = predict[0, :, :,0]
+#     predict_uinit8 = (predict*255).astype('u1')
+
+#     # save results
+#     save_path = path.replace(input_path, output_path)
+#     save_path = save_path.replace('_0', '_road_0')
+
+#     cv2.imwrite(save_path, predict_uinit8)
+#     print('saved ', save_path)
 
