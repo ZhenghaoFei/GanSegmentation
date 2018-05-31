@@ -162,13 +162,13 @@ a2b_pool = utils.ItemPool()
 # # #########################
 
 ''' summary '''
-summary_writer = tf.summary.FileWriter('./outputs/summaries/' + dataset + saveidx, sess.graph)
+summary_writer = tf.summary.FileWriter('./outputs/' + dataset + saveidx + '/summaries/' , sess.graph)
 
 ''' saver '''
 saver = tf.train.Saver(max_to_keep=5)
 
 ''' restore '''
-ckpt_dir = './outputs/checkpoints/' + dataset + saveidx
+ckpt_dir = './outputs/' + dataset + saveidx + '/checkpoints/'
 utils.mkdir(ckpt_dir)
 try:
     utils.load_checkpoint(ckpt_dir, sess)
@@ -245,7 +245,7 @@ for it in range(sess.run(it_cnt), max_it):
         sample_opt = a_ipt
         sample_opt[:,:,:,0] = 0.7*sample_opt[:,:,:,0] + 0.3* predict[:,:,:,0]
 
-        save_dir = './outputs/sample_images_while_training/' + dataset + saveidx
+        save_dir = './outputs/' + dataset + saveidx + '/sample_images_while_training/' 
         utils.mkdir(save_dir)
         im.imwrite(im.immerge(sample_opt, len(sample_opt), 1), '%s/Epoch_(%d)_(%dof%d).jpg' % (save_dir, epoch, it_epoch, batch_epoch))
 
