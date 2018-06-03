@@ -20,13 +20,28 @@ def discriminator(img, scope, dim=64, train=True):
     conv_bn_lrelu = partial(conv, normalizer_fn=bn, activation_fn=lrelu, biases_initializer=None)
 
     with tf.variable_scope(scope + '_discriminator', reuse=tf.AUTO_REUSE):
+
         net = lrelu(conv(img, dim, 4, 2))
         net = conv_bn_lrelu(net, dim * 2, 4, 2)
         net = conv_bn_lrelu(net, dim * 4, 4, 2)
-        net = conv_bn_lrelu(net, dim * 8, 4, 1)
-        net = conv(net, 1, 4, 1)
+        net = conv_bn_lrelu(net, dim * 8, 4, 1) 
 
-        return net
+        out1 = tf.nn.sigmoid(conv(net, 1, 32, 1, padding='SAME'))
+
+        # print('out1:', out1)
+        # out2 = tf.nn.sigmoid(conv(net, 1, 16, 1, padding='VALID'))
+
+        # print('out2:', out2)
+
+        # out3 = tf.nn.sigmoid(conv(net, 1, 8, 1, padding='VALID'))
+        # print('out3:', out3)
+
+        # out4 = tf.nn.sigmoid(conv(net, 1, 4, 1, padding='VALID'))
+        # print('out4:', out4)
+               
+        # out = tf.layers.dense(out, 1, activation=tf.nn.sigmoid)
+
+        return out1
 
 
 def generator(img, scope, dim=64, train=True):

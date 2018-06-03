@@ -58,31 +58,34 @@ a2b = generator_a2b(a_real)
 aa2b_pair = tf.concat([a_real, a2b], axis=3, name='aa2b_pair')
 
 # discriminator
-a2b_logit = discriminator_b(aa2b_pair)
+a2b_logits = discriminator_b(aa2b_pair)
 
-ab_match_logit = discriminator_b(ab_match_pair)
-ab_unmatch_logit = discriminator_b(ab_unmatch_pair)
-a2b_sample_logit = discriminator_b(ab_generator_pair)
+ab_match_logits = discriminator_b(ab_match_pair)
+ab_unmatch_logits = discriminator_b(ab_unmatch_pair)
+a2b_sample_logits = discriminator_b(ab_generator_pair)
 
 # losses
 # generative loss
-
-g_loss_a2b = tf.losses.mean_squared_error(a2b_logit, tf.ones_like(a2b_logit))
+g_loss_a2b = 0
+for a2b_logit in a2b_logits:
+    g_loss_a2b += tf.losses.mean_squared_error(a2b_logit, tf.ones_like(a2b_logit))
 
 sl_loss = tf.losses.absolute_difference(a2b, b_real)
 # g_loss = g_loss_a2b + sl_loss
 g_loss = g_loss_a2b
 
-
 # discriminative loss
+d_loss_ab_match = 0
+for ab_match_logit in ab_match_logits:
+    d_loss_ab_match += tf.losses.mean_squared_error(ab_match_logit, tf.ones_like(ab_match_logit))
 
-d_loss_ab_match = tf.losses.mean_squared_error(ab_match_logit, tf.ones_like(ab_match_logit))
+d_loss_ab_unmatch = 0
+for ab_unmatch_logit in ab_unmatch_logits:
+    d_loss_ab_unmatch += tf.losses.mean_squared_error(ab_unmatch_logit, tf.zeros_like(ab_unmatch_logit))
 
-
-d_loss_ab_unmatch = tf.losses.mean_squared_error(ab_unmatch_logit, tf.zeros_like(ab_unmatch_logit))
-
-
-d_loss_aa2b_pair = tf.losses.mean_squared_error(a2b_sample_logit, tf.zeros_like(a2b_sample_logit))
+d_loss_aa2b_pair = 0
+for a2b_sample_logit in a2b_sample_logits:
+    d_loss_aa2b_pair += tf.losses.mean_squared_error(a2b_sample_logit, tf.zeros_like(a2b_sample_logit))
 
 d_loss_b = d_loss_ab_match + d_loss_ab_unmatch + d_loss_aa2b_pair
 # d_loss_b *= 0.1
